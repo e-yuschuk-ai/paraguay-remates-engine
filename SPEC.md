@@ -55,7 +55,7 @@ El backend se diseña para que una futura app móvil use los mismos servicios (D
 - Backups verificados y prueba de restauración mensual (RF-33).
 - Seguridad: cifrado en tránsito, límites de intentos y ningún dato sensible (documentos, códigos, máximos privados) en logs ni en eventos públicos (§5.5).
 
-**Decisión abierta:** el stack (lenguaje, framework, nube, base de datos). La v3 no lo elige y hay que definirlo antes de empezar.
+**Stack decidido:** backend en **Rust** y base **PostgreSQL 16**: una primaria al inicio, preparada para réplicas de lectura y backups con PITR. El backend no guarda estado, así que corren varias instancias en paralelo. Detalle en [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Siguen abiertos la nube y el framework web.
 **Pendientes:** P-06 (disponibilidad, RPO/RTO, retención de datos de identidad).
 
 ---
@@ -98,6 +98,9 @@ El backend se diseña para que una futura app móvil use los mismos servicios (D
 ## Parte 4 — Motor de subastas (núcleo)
 
 **Requisitos:** RF-09 a RF-14 · **Invariantes:** RT-01 a RT-07 · **Aceptación:** CA-03 a CA-06 · **Decisiones:** DEC-05, DEC-08
+
+> **Estado: implementado** en `crates/remates-engine` (dominio) y `crates/remates-store` (PostgreSQL).
+> Falta: la anulación de ofertas, la baja de máximos y el ingreso por WhatsApp, que dependen de reglas pendientes (P-04, P-01).
 
 Es la parte más crítica. Se diseña y se prueba primero como dominio puro, sin depender de la interfaz.
 

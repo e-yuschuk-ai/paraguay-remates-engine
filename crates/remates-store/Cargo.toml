@@ -1,0 +1,23 @@
+[package]
+name = "remates-store"
+version = "0.1.0"
+description = "Persistencia PostgreSQL del motor de subastas de Paraguay Remates."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+remates-engine = { path = "../remates-engine" }
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+
+[lints]
+workspace = true
