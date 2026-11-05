@@ -71,3 +71,47 @@ pub async fn relay_batch<E>(
     tx.commit().await.map_err(StoreError::from)?;
     Ok(events.len())
 }
+
+/// Último `id` del outbox (0 si está vacío). Punto de partida para [`read_after`].
+pub async fn last_id(db: &Db) -> Result<i64, StoreError> {
+    Ok(
+        sqlx::query_scalar("SELECT COALESCE(max(id), 0)::bigint FROM outbox")
+            .fetch_one(db.replica())
+            .await?,
+    )
+}
+
+/// Lectura de sólo lectura para difusión en tiempo real: eventos con `id > after`,
+/// salvo los de `skip`, en orden. No marca nada como publicado.
+///
+/// Cada instancia del backend lee todos los eventos y los reparte a sus propios
+/// WebSockets, así N instancias funcionan sin un broker. Lee de la réplica.
+///
+/// Los `id` de `bigserial` pueden confirmarse fuera de orden: un `id` menor puede
+/// aparecer después de uno mayor. Quien lee debe tolerar huecos temporales (ver
+/// `remates-api::hub`).
+pub async fn read_after(
+    db: &Db,
+    after: i64,
+    skip: &[i64],
+    limit: i64,
+) -> Result<Vec<OutboxEvent>, StoreError> {
+    Ok(sqlx::query_as(
+        "SELECT id, aggregate_id, aggregate_version, event_type, audience, recipient_id, \
+         payload, created_at FROM outbox WHERE id > $1 AND NOT (id = ANY($2)) \
+         ORDER BY id LIMIT $3",
+    )
+    .bind(after)
+    .bind(skip)
+    .bind(limit)
+    .fetch_all(db.replica())
+    .await?)
+}
+
+/// Suscripción a `pg_notify('outbox')`. Va contra la primaria: las notificaciones
+/// no se replican.
+pub async fn listen(db: &Db) -> Result<sqlx::postgres::PgListener, StoreError> {
+    let mut listener = sqlx::postgres::PgListener::connect_with(db.primary()).await?;
+    listener.listen("outbox").await?;
+    Ok(listener)
+}

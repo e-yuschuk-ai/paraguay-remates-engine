@@ -1,0 +1,1426 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Paraguay Remates API",
+    "description": "API del motor de subastas. Importes en unidades menores: centavos para USD, guaraníes para PYG. Ver SPEC.md y la especificación técnica v3.",
+    "license": {
+      "name": "UNLICENSED",
+      "identifier": "UNLICENSED"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "operación"
+        ],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "El proceso está vivo."
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "tags": [
+          "operación"
+        ],
+        "operationId": "ready",
+        "responses": {
+          "200": {
+            "description": "Puede atender: la base primaria responde."
+          },
+          "503": {
+            "description": "La base no responde."
+          }
+        }
+      }
+    },
+    "/v1/admin/auctions/{auction_id}/bids": {
+      "get": {
+        "tags": [
+          "administración"
+        ],
+        "operationId": "admin_bids",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial con identidades reales, para trazabilidad (RF-13).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminBid"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/admin/auctions/{auction_id}/close": {
+      "post": {
+        "tags": [
+          "administración"
+        ],
+        "operationId": "close_auction",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cierra ya si llegó la hora. El cierre también es automático.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloseResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/auctions": {
+      "post": {
+        "tags": [
+          "subastas"
+        ],
+        "operationId": "create_auction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAuctionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedAuction"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/auctions/{auction_id}": {
+      "get": {
+        "tags": [
+          "subastas"
+        ],
+        "operationId": "get_auction",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Posición pública. También sirve de polling de respaldo (RF-15).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStanding"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auctions/{auction_id}/bids": {
+      "get": {
+        "tags": [
+          "pujas"
+        ],
+        "operationId": "list_bids",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial público, con alias (RF-13).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicBid"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "pujas"
+        ],
+        "operationId": "place_bid",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "x-client-channel",
+            "in": "header",
+            "description": "`app` si el pedido viene de la app móvil",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BidBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "La clave idempotente ya se usó con otro pedido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/auctions/{auction_id}/max-bids": {
+      "post": {
+        "tags": [
+          "pujas"
+        ],
+        "operationId": "set_max_bid",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "x-client-channel",
+            "in": "header",
+            "description": "`app` si el pedido viene de la app móvil",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaxBidBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/auctions/{auction_id}/ws": {
+      "get": {
+        "tags": [
+          "tiempo real"
+        ],
+        "operationId": "auction_ws",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "description": "Token opcional para recibir avisos privados",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "WebSocket. Cada mensaje es un `ServerMessage`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerMessage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Accepted": {
+        "type": "object",
+        "required": [
+          "seq",
+          "is_leader",
+          "your_alias",
+          "leader_alias",
+          "price",
+          "next_min",
+          "closes_at",
+          "extended",
+          "version"
+        ],
+        "properties": {
+          "closes_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "extended": {
+            "type": "boolean"
+          },
+          "is_leader": {
+            "type": "boolean"
+          },
+          "leader_alias": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "next_min": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "seq": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Orden del servidor de esta acción.",
+            "minimum": 0
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "your_alias": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
+      "AdminBid": {
+        "type": "object",
+        "description": "Línea del historial con identidad real, para trazabilidad autorizada (RF-13).",
+        "required": [
+          "seq",
+          "bidder",
+          "alias",
+          "amount",
+          "kind",
+          "source",
+          "request_id",
+          "created_at"
+        ],
+        "properties": {
+          "alias": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "bidder": {
+            "$ref": "#/components/schemas/UserId"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/RecordKind"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "seq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          }
+        }
+      },
+      "Amount": {
+        "type": "integer",
+        "format": "int64",
+        "description": "Importe positivo en unidades menores, acotado por [`Amount::MAX`].\n\nLa moneda no viaja dentro del importe: la define la subasta. Comparar importes\nsólo tiene sentido dentro de una misma subasta.",
+        "example": 50000
+      },
+      "AuctionId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Subasta / publicación."
+      },
+      "AuctionKind": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Remate al martillo: sin precio base; se adjudica a la mayor oferta válida.",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "hammer"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Remate con precio de reserva: el mínimo del vendedor es público y las\nofertas comienzan ahí. Sin ofertas, el cierre es desierto.",
+            "required": [
+              "base",
+              "type"
+            ],
+            "properties": {
+              "base": {
+                "$ref": "#/components/schemas/Amount"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "reserve"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "Modalidad elegida por el vendedor (DEC-05, RF-09)."
+      },
+      "BidBody": {
+        "type": "object",
+        "description": "Puja manual. El postor es siempre el usuario del token.",
+        "required": [
+          "request_id",
+          "amount",
+          "currency"
+        ],
+        "properties": {
+          "amount": {
+            "$ref": "#/components/schemas/Amount",
+            "description": "Importe en unidades menores: centavos para USD, guaraníes para PYG."
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency",
+            "description": "Moneda que el usuario vio al confirmar (RF-10)."
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Clave idempotente generada por el cliente para este intento. Reenviarla tras\nun corte devuelve la misma decisión sin duplicar la puja (RT-02)."
+          }
+        }
+      },
+      "CloseResponse": {
+        "type": "object",
+        "required": [
+          "closed"
+        ],
+        "properties": {
+          "certificate_number": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Número del certificado de adjudicación (N001…), si hubo venta."
+          },
+          "closed": {
+            "type": "boolean",
+            "description": "`false` si todavía no era la hora de cierre o ya estaba cerrada."
+          },
+          "outcome": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Outcome"
+              }
+            ]
+          }
+        }
+      },
+      "CreateAuctionBody": {
+        "type": "object",
+        "required": [
+          "currency",
+          "kind",
+          "increment",
+          "opens_at",
+          "scheduled_close_at"
+        ],
+        "properties": {
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "extension": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ExtensionBody",
+                "description": "Por defecto: 2 minutos de ventana y 2 de alargue (RF-12)."
+              }
+            ]
+          },
+          "first_bid": {
+            "$ref": "#/components/schemas/FirstBidRule",
+            "description": "Primera oferta en remate al martillo. Pendiente P-04: por defecto, el incremento."
+          },
+          "increment": {
+            "$ref": "#/components/schemas/Amount",
+            "description": "Escalón mínimo, en unidades menores."
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AuctionKind"
+          },
+          "opens_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "scheduled_close_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "seller_id": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/UserId",
+                "description": "Vendedor. Obligatorio si publica un administrador en su nombre (RF-05);\nsi publica un vendedor, se toma del token."
+              }
+            ]
+          }
+        }
+      },
+      "CreatedAuction": {
+        "type": "object",
+        "required": [
+          "auction_id"
+        ],
+        "properties": {
+          "auction_id": {
+            "$ref": "#/components/schemas/AuctionId"
+          }
+        }
+      },
+      "Currency": {
+        "type": "string",
+        "description": "Moneda de una publicación. Una subasta corre entera en una sola moneda (RF-06).",
+        "enum": [
+          "USD",
+          "PYG"
+        ]
+      },
+      "Decision": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Accepted"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "accepted"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "object",
+            "required": [
+              "reason",
+              "status"
+            ],
+            "properties": {
+              "reason": {
+                "$ref": "#/components/schemas/RejectReason"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "rejected"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "Decisión sobre un pedido. Es lo que se devuelve al cliente y lo que se guarda."
+      },
+      "DecisionResponse": {
+        "type": "object",
+        "description": "Decisión del motor. Una puja rechazada por reglas de la subasta responde 200 con\n`status = rejected`: es un resultado de negocio, no un error del pedido.",
+        "required": [
+          "decision",
+          "replayed"
+        ],
+        "properties": {
+          "decision": {
+            "$ref": "#/components/schemas/Decision"
+          },
+          "replayed": {
+            "type": "boolean",
+            "description": "`true` si la clave ya se había usado y se devolvió la decisión guardada."
+          }
+        }
+      },
+      "ErrorBody": {
+        "type": "object",
+        "description": "Cuerpo de todo error de la API.",
+        "required": [
+          "error",
+          "message"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Código estable para el cliente, por ejemplo `not_found`.",
+            "example": "not_found"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ExtensionBody": {
+        "type": "object",
+        "required": [
+          "window_seconds",
+          "extend_by_seconds"
+        ],
+        "properties": {
+          "extend_by_seconds": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Alargue en segundos. Cero lo desactiva.",
+            "example": 120,
+            "minimum": 0
+          },
+          "mode": {
+            "$ref": "#/components/schemas/ExtensionMode"
+          },
+          "window_seconds": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Ventana final en segundos: una puja dentro de ella alarga el cierre.",
+            "example": 120,
+            "minimum": 0
+          }
+        }
+      },
+      "ExtensionMode": {
+        "type": "string",
+        "description": "Cómo se alarga el cierre cuando entra una puja en la ventana final.\n\n**Pendiente P-04 / RF-12.** No está acordado si cada puja reinicia los dos\nminutos desde su recepción o suma tiempo al cierre anterior.",
+        "enum": [
+          "reset_from_bid",
+          "add_to_close"
+        ]
+      },
+      "FirstBidRule": {
+        "type": "string",
+        "description": "Primera oferta válida en una subasta al martillo.\n\n**Pendiente P-04 / RT-05.** \"Arrancar desde cero\" no dice si cero es una oferta\nválida. La propuesta de la v3 es que la primera oferta sea igual al incremento;\nes el valor por defecto, pero queda configurable hasta que el cliente lo apruebe.",
+        "enum": [
+          "increment",
+          "any_positive"
+        ]
+      },
+      "MaxBidBody": {
+        "type": "object",
+        "description": "Puja máxima automática (RF-11).",
+        "required": [
+          "request_id",
+          "max",
+          "currency"
+        ],
+        "properties": {
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "max": {
+            "$ref": "#/components/schemas/Amount",
+            "description": "Máximo en unidades menores. Es privado: no aparece en eventos públicos."
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Outcome": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "winner",
+              "amount",
+              "type"
+            ],
+            "properties": {
+              "amount": {
+                "$ref": "#/components/schemas/Amount"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "awarded"
+                ]
+              },
+              "winner": {
+                "$ref": "#/components/schemas/UserId"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "no_sale"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "Resultado de un cierre."
+      },
+      "Phase": {
+        "type": "string",
+        "description": "Fase de la subasta en un instante dado, según el reloj del servidor (RT-03).",
+        "enum": [
+          "upcoming",
+          "open",
+          "awaiting_close",
+          "closed"
+        ]
+      },
+      "PublicBid": {
+        "type": "object",
+        "description": "Línea del historial público.",
+        "required": [
+          "seq",
+          "alias",
+          "amount",
+          "kind",
+          "created_at"
+        ],
+        "properties": {
+          "alias": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "amount": {
+            "$ref": "#/components/schemas/Amount"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/RecordKind"
+          },
+          "seq": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "PublicStanding": {
+        "type": "object",
+        "description": "Posición pública (sin identidades ni máximos).",
+        "required": [
+          "auction_id",
+          "currency",
+          "phase",
+          "closes_at",
+          "version",
+          "server_time"
+        ],
+        "properties": {
+          "auction_id": {
+            "$ref": "#/components/schemas/AuctionId"
+          },
+          "closes_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "leader_alias": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "minimum": 0
+          },
+          "next_min": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Amount"
+              }
+            ]
+          },
+          "phase": {
+            "$ref": "#/components/schemas/Phase"
+          },
+          "price": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Amount"
+              }
+            ]
+          },
+          "server_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "RecordKind": {
+        "type": "string",
+        "description": "Tipo de registro en el historial.",
+        "enum": [
+          "manual",
+          "auto"
+        ]
+      },
+      "RejectReason": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Usuario inexistente, suspendido o sin identidad/2FA vigente (RF-03, RF-10).",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "bidder_not_eligible"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "rejection",
+              "type"
+            ],
+            "properties": {
+              "rejection": {
+                "$ref": "#/components/schemas/Rejection"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "engine"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "Rejection": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "opens_at",
+              "type"
+            ],
+            "properties": {
+              "opens_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "not_open_yet"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "closed"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "seller_cannot_bid"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "expected",
+              "type"
+            ],
+            "properties": {
+              "expected": {
+                "$ref": "#/components/schemas/Currency"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "currency_mismatch"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "min",
+              "type"
+            ],
+            "properties": {
+              "min": {
+                "$ref": "#/components/schemas/Amount"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "below_minimum"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "already_leading"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "current",
+              "type"
+            ],
+            "properties": {
+              "current": {
+                "$ref": "#/components/schemas/Amount"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "max_not_above_current"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "amount_out_of_range"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "Motivo por el que el motor rechaza una acción."
+      },
+      "Role": {
+        "type": "string",
+        "enum": [
+          "bidder",
+          "seller",
+          "admin"
+        ]
+      },
+      "ServerMessage": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "standing",
+              "type"
+            ],
+            "properties": {
+              "standing": {
+                "$ref": "#/components/schemas/PublicStanding"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "snapshot"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "version",
+              "event_type",
+              "audience",
+              "payload",
+              "type"
+            ],
+            "properties": {
+              "audience": {
+                "type": "string",
+                "description": "`public`, `user` o `admin`."
+              },
+              "event_type": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "payload": {
+                "type": "object"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "event"
+                ]
+              },
+              "version": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          }
+        ],
+        "description": "Mensaje del servidor por el WebSocket."
+      },
+      "Source": {
+        "type": "string",
+        "description": "Canal por el que llegó un pedido.",
+        "enum": [
+          "web",
+          "app",
+          "whatsapp",
+          "admin"
+        ]
+      },
+      "UserId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Usuario de la plataforma (postor, vendedor o administrador)."
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "subastas",
+      "description": "Publicación y consulta de subastas"
+    },
+    {
+      "name": "pujas",
+      "description": "Pujas manuales, máximos automáticos e historial"
+    },
+    {
+      "name": "tiempo real",
+      "description": "WebSocket por subasta"
+    },
+    {
+      "name": "administración",
+      "description": "Requiere rol admin"
+    },
+    {
+      "name": "operación",
+      "description": "Sondas de salud"
+    }
+  ]
+}

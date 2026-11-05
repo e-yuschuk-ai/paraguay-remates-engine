@@ -27,6 +27,7 @@ use crate::rows::{self, db_i64};
 
 /// Canal por el que llegó un pedido.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Source {
     Web,
@@ -68,6 +69,7 @@ pub struct BidRequest {
 
 /// Decisión sobre un pedido. Es lo que se devuelve al cliente y lo que se guarda.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum Decision {
     Accepted(Accepted),
@@ -75,6 +77,7 @@ pub enum Decision {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct Accepted {
     /// Orden del servidor de esta acción.
     pub seq: u64,
@@ -89,6 +92,7 @@ pub struct Accepted {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum RejectReason {
     /// Usuario inexistente, suspendido o sin identidad/2FA vigente (RF-03, RF-10).
@@ -118,6 +122,7 @@ pub struct Closed {
 
 /// Posición pública (sin identidades ni máximos).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct PublicStanding {
     pub auction_id: AuctionId,
     pub currency: Currency,
@@ -132,6 +137,7 @@ pub struct PublicStanding {
 
 /// Línea del historial público.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct PublicBid {
     pub seq: u64,
     pub alias: u32,
@@ -142,6 +148,7 @@ pub struct PublicBid {
 
 /// Línea del historial con identidad real, para trazabilidad autorizada (RF-13).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 pub struct AdminBid {
     pub seq: u64,
     pub bidder: UserId,

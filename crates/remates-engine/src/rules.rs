@@ -7,6 +7,7 @@ use crate::money::{Amount, Currency};
 
 /// Modalidad elegida por el vendedor (DEC-05, RF-09).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum AuctionKind {
     /// Remate al martillo: sin precio base; se adjudica a la mayor oferta válida.
@@ -22,6 +23,7 @@ pub enum AuctionKind {
 /// válida. La propuesta de la v3 es que la primera oferta sea igual al incremento;
 /// es el valor por defecto, pero queda configurable hasta que el cliente lo apruebe.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum FirstBidRule {
     /// La primera oferta mínima es el incremento configurado (propuesta RT-05).
@@ -36,6 +38,7 @@ pub enum FirstBidRule {
 /// **Pendiente P-04 / RF-12.** No está acordado si cada puja reinicia los dos
 /// minutos desde su recepción o suma tiempo al cierre anterior.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum ExtensionMode {
     /// El cierre pasa a ser `recepción + extend_by` (nunca se acorta).

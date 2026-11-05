@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/remates-engine", "crates/remates-store"]
+members = ["crates/remates-engine", "crates/remates-store", "crates/remates-api"]
 
 [workspace.package]
 edition = "2021"
@@ -17,6 +17,19 @@ uuid = { version = "1", features = ["v4", "v7", "serde"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
 sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "chrono", "json", "migrate", "macros", "derive"] }
 proptest = "1"
+utoipa = { version = "5", features = ["uuid", "chrono"] }
+axum = { version = "0.8", features = ["ws", "macros"] }
+tower = { version = "0.5", features = ["util", "timeout"] }
+tower-http = { version = "0.6", features = ["trace", "cors", "request-id", "timeout", "util"] }
+utoipa-axum = "0.2"
+utoipa-scalar = { version = "0.3", features = ["axum"] }
+jsonwebtoken = "9"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tokio-util = "0.7"
+http-body-util = "0.1"
+tokio-tungstenite = "0.26"
+futures-util = { version = "0.3", default-features = false, features = ["sink", "std"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

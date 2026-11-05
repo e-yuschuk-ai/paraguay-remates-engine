@@ -15,6 +15,10 @@ serde_json.workspace = true
 sqlx.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
+utoipa = { workspace = true, optional = true }
+
+[features]
+openapi = ["dep:utoipa", "remates-engine/openapi"]
 
 [dev-dependencies]
 tokio.workspace = true

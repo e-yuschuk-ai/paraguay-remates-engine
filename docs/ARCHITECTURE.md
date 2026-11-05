@@ -13,13 +13,16 @@ Parte 4) y la especificación v3 en [`docs/`](.).
 | Importes | `bigint` en unidades menores | Dinero exacto, sin flotantes (RT-04). |
 | Reloj | `clock_timestamp()` de la primaria | Un solo reloj para todas las instancias (RT-03). |
 | Eventos | Outbox transaccional | No se pierden avisos entre la puja y su envío (§5.1). |
+| API | **axum 0.8** + **utoipa 5** | Mismo runtime (tokio) que `sqlx`; WebSocket incluido; middleware de `tower`. Rutas y OpenAPI salen del mismo código. |
+| Autenticación | JWT HS256 verificado en la API | Sin sesión en el servidor. La habilitación para pujar se revalida en la base en cada puja. |
 
 ## Crates
 
 ```
 crates/
 ├── remates-engine   Dominio puro: reglas, pujas, máximos, alargue, cierre. Sin IO.
-└── remates-store    PostgreSQL: migraciones, transacciones, idempotencia, outbox.
+├── remates-store    PostgreSQL: migraciones, transacciones, idempotencia, outbox.
+└── remates-api      HTTP + WebSocket (axum 0.8), contrato OpenAPI (utoipa 5), JWT.
 ```
 
 El motor no conoce la base ni el reloj: recibe `now` y devuelve los efectos de cada acción.
@@ -73,6 +76,34 @@ Lo que todavía **no** está implementado porque falta la regla de negocio:
 - la anulación de ofertas (RF-13);
 - la baja o cancelación de un máximo;
 - el ingreso de pujas desde WhatsApp (P-01). La API ya acepta `Source::Whatsapp` y `Source::Admin`.
+
+## API y tiempo real
+
+- **Contrato primero.** Cada ruta se declara con `utoipa-axum`, así que si existe está
+  documentada. `docs/openapi.json` se versiona en el repo y la CI falla si quedó desactualizado.
+  Sirve para generar los clientes de la web y de la futura app.
+- **El postor sale del token**, nunca del cuerpo del pedido. El rol del token habilita rutas;
+  la base decide si el usuario puede pujar.
+- **Pujas por HTTP, difusión por WebSocket.** El socket es de sólo lectura, así que las pujas
+  siempre pasan por el camino idempotente.
+- **Difusión con varias instancias sin broker.** Cada instancia lee *todo* el outbox (sólo
+  lectura, desde la réplica si la hay) y lo reparte a sus propios sockets. La despierta
+  `LISTEN outbox` en la primaria, con una consulta de respaldo cada 500 ms.
+- **Ids del outbox fuera de orden.** Los `bigserial` pueden confirmarse desordenados: el
+  lector espera hasta 3 s a que se complete un hueco antes de darlo por perdido. Si igual se
+  pierde un evento, el cliente lo detecta por la `version` y pide `resync`.
+- **Cierre automático** cada segundo en cada instancia (`RUN_WORKERS`). Puede correr en todas
+  a la vez.
+- **Límites:** timeout de 10 s por pedido (un reintento con la misma clave da la decisión
+  real), cuerpo de hasta 16 KB, id de pedido (`x-request-id`) en cada respuesta y log. Los
+  logs no incluyen la query, que puede llevar el token del WebSocket.
+
+Pendiente en esta capa:
+- límite de pedidos por usuario e IP (por ejemplo `tower_governor`);
+- métricas Prometheus;
+- un consumidor del outbox para los avisos externos (WhatsApp, correo).
+
+Hoy los eventos quedan sin marcar como publicados hasta que exista ese consumidor.
 
 ## Escalado
 

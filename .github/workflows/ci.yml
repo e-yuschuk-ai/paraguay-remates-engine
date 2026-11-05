@@ -35,3 +35,5 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --all-targets
+      - name: El contrato OpenAPI publicado está al día
+        run: cargo run -q -p remates-api -- openapi | diff -u docs/openapi.json -

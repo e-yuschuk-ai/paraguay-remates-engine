@@ -48,6 +48,7 @@ pub struct BidderEntry {
 
 /// Resultado de un cierre.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Outcome {
     Awarded { winner: UserId, amount: Amount },
@@ -67,6 +68,7 @@ pub enum Status {
 
 /// Fase de la subasta en un instante dado, según el reloj del servidor (RT-03).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Phase {
     /// Todavía no abrió.
@@ -102,6 +104,7 @@ pub struct Command {
 
 /// Tipo de registro en el historial.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum RecordKind {
     /// Puja manual del postor.
@@ -152,6 +155,7 @@ pub struct Applied {
 
 /// Motivo por el que el motor rechaza una acción.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, thiserror::Error)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Rejection {
     #[error("la subasta todavía no abrió")]

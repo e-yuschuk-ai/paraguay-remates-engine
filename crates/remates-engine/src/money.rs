@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 /// Moneda de una publicación. Una subasta corre entera en una sola moneda (RF-06).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]
 #[serde(rename_all = "UPPERCASE")]
 pub enum Currency {
     /// Dólar estadounidense, 2 decimales (importes en centavos).
@@ -55,6 +56,7 @@ impl fmt::Display for Currency {
 /// La moneda no viaja dentro del importe: la define la subasta. Comparar importes
 /// sólo tiene sentido dentro de una misma subasta.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "openapi", derive(utoipa::ToSchema), schema(value_type = i64, example = 50000))]
 #[serde(try_from = "i64", into = "i64")]
 pub struct Amount(i64);
 

@@ -153,6 +153,8 @@ Es la parte más crítica. Se diseña y se prueba primero como dominio puro, sin
 
 **Requisitos:** RF-15, RF-16 · **Invariantes:** RT-06 · **Aceptación:** CA-07
 
+> **Estado: implementado** en `crates/remates-api`: WebSocket por subasta, snapshot más eventos versionados, `resync` y difusión entre instancias leyendo el outbox. Falta la prueba de carga de 12.000 usuarios (Parte 12).
+
 - WebSocket con servidor autoritativo y cuenta regresiva sincronizada con el reloj del servidor.
 - Eventos de oferta aceptada, cambio de cierre, cierre de subasta y notificaciones del usuario.
 - Reconexión automática con **resincronización completa del estado**. Una oferta rechazada nunca se muestra como aceptada.
@@ -165,6 +167,8 @@ Es la parte más crítica. Se diseña y se prueba primero como dominio puro, sin
 ## Parte 6 — Notificaciones web
 
 **Requisitos:** RF-17, RF-18 · **Aceptación:** CA-08 · **Decisiones:** DEC-07, DEC-09
+
+> **Estado: backend implementado.** Los avisos privados (decisión de la puja, oferta superada o máximo superado, adjudicación) llegan por el WebSocket del usuario autenticado. Falta la interfaz web.
 
 - Avisos dentro de la plataforma:
   - confirmación de la oferta propia;
