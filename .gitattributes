@@ -1,0 +1,14 @@
+# Finales de línea LF en el repositorio y en la copia de trabajo, sin importar
+# core.autocrlf de cada máquina (Git para Windows lo trae en true).
+* text=auto eol=lf
+
+# Binarios: sin conversión.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
